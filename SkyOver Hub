@@ -120,6 +120,48 @@ local Button = MainTab:CreateButton({
    end,
 })
 
+local Button = MainTab:CreateButton({
+   Name = "Anti Afk",
+   Callback = function()
+   local Players = game:GetService("Players")
+local VirtualUser = game:GetService("VirtualUser")
+
+local AntiAFK = false
+local Time = 0
+
+local StatusLabel = Tab:CreateLabel("Status: OFF")
+local TimeLabel = Tab:CreateLabel("AFK Time: 0s")
+
+-- Button bật Anti AFK
+Tab:CreateButton({
+   Name = "Start Anti AFK",
+   Callback = function()
+      AntiAFK = true
+      StatusLabel:Set("Status: ON")
+   end
+})
+
+-- Anti AFK system
+Players.LocalPlayer.Idled:Connect(function()
+    if AntiAFK then
+        VirtualUser:Button2Down(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+        task.wait(1)
+        VirtualUser:Button2Up(Vector2.new(0,0),workspace.CurrentCamera.CFrame)
+    end
+end)
+
+-- Đếm thời gian treo
+task.spawn(function()
+    while true do
+        task.wait(1)
+        if AntiAFK then
+            Time = Time + 1
+            TimeLabel:Set("AFK Time: "..Time.."s")
+        end
+    end
+end)
+   end,
+})
 
 
 
@@ -128,4 +170,85 @@ local Button = MainTab:CreateButton({
 
 
 
+local MainTab = MainWindow:CreateTab("LoadsPlayer", 4483362458) -- Title, Image
+local MainSection = MainTab:CreateSection("LoadsPlayer")
 
+local Toggle = MainTab:CreateToggle({
+   Name = "Fly Gui Toggle",
+   CurrentValue = false,
+   Flag = "Toggle1", -- A flag is the identifier for the configuration file; make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Value)
+   -- Fly variables
+local flying = false
+local speed = 60
+local bodyGyro
+local bodyVelocity
+
+local player = game.Players.LocalPlayer
+
+-- Toggle Fly
+MainTab:CreateToggle({
+   Name = "Fly",
+   CurrentValue = false,
+   Flag = "FlyToggle",
+   Callback = function(Value)
+
+      flying = Value
+
+      if flying then
+         local char = player.Character or player.CharacterAdded:Wait()
+         local hrp = char:WaitForChild("HumanoidRootPart")
+
+         bodyGyro = Instance.new("BodyGyro", hrp)
+         bodyVelocity = Instance.new("BodyVelocity", hrp)
+
+         bodyGyro.P = 9e4
+         bodyGyro.maxTorque = Vector3.new(9e9,9e9,9e9)
+         bodyGyro.cframe = hrp.CFrame
+
+         bodyVelocity.velocity = Vector3.new(0,0,0)
+         bodyVelocity.maxForce = Vector3.new(9e9,9e9,9e9)
+
+         game:GetService("RunService").RenderStepped:Connect(function()
+            if flying then
+               bodyVelocity.velocity = workspace.CurrentCamera.CFrame.LookVector * speed
+               bodyGyro.cframe = workspace.CurrentCamera.CFrame
+            end
+         end)
+
+      else
+         if bodyGyro then bodyGyro:Destroy() end
+         if bodyVelocity then bodyVelocity:Destroy() end
+      end
+
+   end,
+})
+
+local Toggle = MainTab:CreateToggle({
+   Name = "Toggle Noclip",
+   CurrentValue = false,
+   Flag = "Toggle1", -- A flag is the identifier for the configuration file; make sure every element has a different flag if you're using configuration saving to ensure no overlaps
+   Callback = function(Value)
+   local noclip = false
+local RunService = game:GetService("RunService")
+
+RunService.Stepped:Connect(function()
+    if noclip and game.Players.LocalPlayer.Character then
+        for _, v in pairs(game.Players.LocalPlayer.Character:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.CanCollide = false
+            end
+        end
+    end
+end)
+
+Tab:CreateToggle({
+    Name = "Noclip",
+    CurrentValue = false,
+    Flag = "NoclipToggle",
+    Callback = function(Value)
+        noclip = Value
+    end,
+})
+   end,
+})
