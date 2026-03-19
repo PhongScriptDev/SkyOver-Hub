@@ -292,7 +292,7 @@ local function KillTarget(target, dist)
             ["cycleIndex"] = 1,
             ["hitboxOffset"] = Vector3.new(0, 0, 0),
             ["tool"] = tool,
-            ["damage"] = 999999999999999999999999999999999999999
+            ["damage"] = 999999999
         },
         [3] = {
             [1] = {
